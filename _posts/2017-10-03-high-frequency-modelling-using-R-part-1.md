@@ -5,6 +5,17 @@ date:   2017-10-03
 categories: jekyll update
 ---
 
+<!-- Global Site Tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-107545335-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments)};
+  gtag('js', new Date());
+
+  gtag('config', 'UA-107545335-1');
+</script>
+
+
 In this series I will discuss some issues that I faced during writing my Master thesis on financial risk forecasting using high frequency data.
 
 High frequency data are difficult to find. There are commercial sources but you need to pay fees which sometimes are overwhelming if you are not financially supported by your University or workplace. The idea is, the bigger the granularity of the data the greater the monetary cost. Looking for data to construct my dataset and conduct my research I found <a href="http://www.histdata.com/">http://www.histdata.com</a> which offers free tick data in monthly batches.
