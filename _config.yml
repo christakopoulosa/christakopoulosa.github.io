@@ -31,6 +31,9 @@ google:
   tag_manager:
     container_id: GTM-TMTK9C6
 
+google_analytics: UA-107545335-1
+
+
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
 # to override the default setting.
