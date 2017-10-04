@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>High frequency modelling using R part 1</title>
+  <meta name="description" content="In this series I will discuss some issues that I faced during writing my Master thesis on financial risk forecasting using high frequency data.">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/jekyll/update/2017/10/03/high-frequency-modelling-using-R-part-1.html">
+  <link rel="alternate" type="application/rss+xml" title="Argyrios Christakopoulos" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Argyrios Christakopoulos</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">High frequency modelling using R part 1</h1>
+    <p class="post-meta">
+      <time datetime="2017-10-03T00:00:00+01:00" itemprop="datePublished">
+        
+        Oct 3, 2017
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>In this series I will discuss some issues that I faced during writing my Master thesis on financial risk forecasting using high frequency data.</p>
+
+<p>High frequency data are difficult to find. There are commercial sources but you need to pay fees which sometimes are overwhelming if you are not financially supported by your University or workplace. The idea is, the bigger the granularity of the data the greater the monetary cost. Looking for data to construct my dataset and conduct my research I found <a href="http://www.histdata.com/">http://www.histdata.com</a> which offers free tick data in monthly batches.</p>
+
+<p>So the purpose of part 1 of this series is to guide you through the process of constructing a dataset using free data from histdata.com using R.</p>
+
+<p>Firstly, we download the data from http://www.histdata.com/download-free-forex-data/?/ascii/tick-data-quotes. For my example I use the Euro currency against the Australian dollar (EUR/AUD) from January to March of 2015. You can expand the dataset according to your needs. However, please remember due to the sheer volume of the tick dataset you need ample computer power to perform these tasks. The least you should do is to switch to a x64 computer.</p>
+
+<p>The dataset consists of a date stamp, a bid price, an offer price and the volume of each tick. The ticks are recorded on Eastern Standard Time (EST) without daylight savings adjustments.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">##Preliminary actions##</span>
+<span class="n">getwd</span><span class="p">()</span>
+<span class="n">setwd</span><span class="p">(</span><span class="s2">"C:/~"</span><span class="p">)</span> <span class="c1">#set the Working Directory</span>
+<span class="no">Sys</span><span class="p">.</span><span class="nf">setenv</span><span class="p">(</span><span class="no">TZ</span><span class="o">=</span><span class="s2">"EST"</span><span class="p">)</span> <span class="c1">#Eastern Standard Time</span>
+
+<span class="c1">##Raw data manipulation##</span>
+<span class="n">data1</span><span class="o">&lt;-</span><span class="n">read</span><span class="p">.</span><span class="nf">csv</span><span class="p">(</span><span class="s2">"EURAUD_201501.csv"</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">,</span> <span class="n">col</span><span class="p">.</span><span class="nf">names</span> <span class="o">=</span> <span class="n">c</span><span class="p">(</span><span class="s2">"TIMESTAMP"</span><span class="p">,</span> <span class="s2">"BID"</span><span class="p">,</span> <span class="s2">"OFR"</span><span class="p">,</span> <span class="s2">"VOL"</span><span class="p">),</span> <span class="n">stringsAsFactors</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">)</span>
+<span class="n">data2</span><span class="o">&lt;-</span><span class="n">read</span><span class="p">.</span><span class="nf">csv</span><span class="p">(</span><span class="s2">"EURAUD_201502.csv"</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">,</span> <span class="n">col</span><span class="p">.</span><span class="nf">names</span> <span class="o">=</span> <span class="n">c</span><span class="p">(</span><span class="s2">"TIMESTAMP"</span><span class="p">,</span> <span class="s2">"BID"</span><span class="p">,</span> <span class="s2">"OFR"</span><span class="p">,</span> <span class="s2">"VOL"</span><span class="p">),</span> <span class="n">stringsAsFactors</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">)</span>
+<span class="n">data3</span><span class="o">&lt;-</span><span class="n">read</span><span class="p">.</span><span class="nf">csv</span><span class="p">(</span><span class="s2">"EURAUD_201503.csv"</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">,</span> <span class="n">col</span><span class="p">.</span><span class="nf">names</span> <span class="o">=</span> <span class="n">c</span><span class="p">(</span><span class="s2">"TIMESTAMP"</span><span class="p">,</span> <span class="s2">"BID"</span><span class="p">,</span> <span class="s2">"OFR"</span><span class="p">,</span> <span class="s2">"VOL"</span><span class="p">),</span> <span class="n">stringsAsFactors</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">)</span>
+<span class="n">total1</span><span class="o">&lt;-</span> <span class="n">rbind</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">)</span> <span class="c1">#bind the data to one file</span></code></pre></figure>
+
+<p>The date stamp needs some tweaking</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">total1</span><span class="vg">$TIMESTAMP</span> <span class="o">=</span> <span class="nb">sub</span><span class="p">(</span> <span class="s1">'(?&lt;=.{11})'</span><span class="p">,</span> <span class="s1">':'</span><span class="p">,</span> <span class="n">total1</span><span class="vg">$TIMESTAMP</span><span class="p">,</span> <span class="n">perl</span><span class="o">=</span><span class="no">TRUE</span> <span class="p">)</span> <span class="c1">#create clear timestamps</span>
+
+<span class="n">total1</span><span class="vg">$TIMESTAMP</span> <span class="o">=</span> <span class="nb">sub</span><span class="p">(</span> <span class="s1">'(?&lt;=.{14})'</span><span class="p">,</span> <span class="s1">':'</span><span class="p">,</span> <span class="n">total1</span><span class="vg">$TIMESTAMP</span><span class="p">,</span> <span class="n">perl</span><span class="o">=</span><span class="no">TRUE</span> <span class="p">)</span>
+
+<span class="n">total1</span><span class="vg">$TIMESTAMP</span> <span class="o">=</span> <span class="nb">sub</span><span class="p">(</span> <span class="s1">'(?&lt;=.{17})'</span><span class="p">,</span> <span class="s1">'.'</span><span class="p">,</span> <span class="n">total1</span><span class="vg">$TIMESTAMP</span><span class="p">,</span> <span class="n">perl</span><span class="o">=</span><span class="no">TRUE</span> <span class="p">)</span>
+
+<span class="n">head</span><span class="p">(</span><span class="n">total1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span></code></pre></figure>
+
+<p>Then we have to convert our data to an xts object. Xts package is loaded automatically along with the high frequency package. Also, as we work with tick data even the milliseconds count so we have to inform R to take the milliseconds intro consideration explicitly.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">options</span><span class="p">(</span><span class="n">digits</span><span class="p">.</span><span class="nf">secs</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">#set the accuracy of tick-data to millieseconds</span>
+
+<span class="n">onexts</span><span class="o">=</span><span class="n">xts</span><span class="p">(</span><span class="n">total1</span><span class="p">[,</span><span class="n">c</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)],</span> <span class="n">order</span><span class="p">.</span><span class="nf">by</span> <span class="o">=</span> <span class="n">as</span><span class="o">.</span><span class="no">POSIXct</span><span class="p">(</span><span class="n">total1</span><span class="vg">$TIMESTAMP</span><span class="p">,</span> <span class="n">tz</span> <span class="o">=</span> <span class="s2">"EST"</span><span class="p">,</span>
+
+                                                  <span class="nb">format</span> <span class="o">=</span> <span class="s2">"%Y%m%d %H:%M:%OS"</span><span class="p">))</span> <span class="c1">#convert file to an xts object</span>
+
+
+<span class="no">We</span> <span class="n">construct</span> <span class="mi">5</span><span class="p">,</span><span class="mi">10</span> <span class="n">and</span> <span class="mi">15</span> <span class="n">minute</span> <span class="n">intervals</span> <span class="n">using</span> <span class="n">the</span> <span class="n">previous</span> <span class="n">tick</span> <span class="n">aggregation</span> <span class="n">technique</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">fivemin</span> <span class="o">=</span> <span class="n">aggregatets</span><span class="p">(</span><span class="n">onexts</span><span class="p">,</span> <span class="no">FUN</span> <span class="o">=</span> <span class="s2">"previoustick"</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="s2">"minutes"</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">#create 5 minute intervals</span>
+
+<span class="n">tenmin</span> <span class="o">=</span> <span class="n">aggregatets</span><span class="p">(</span><span class="n">onexts</span><span class="p">,</span> <span class="no">FUN</span> <span class="o">=</span> <span class="s2">"previoustick"</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="s2">"minutes"</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="c1">#10 minute intervals</span>
+
+<span class="n">fifteenmin</span> <span class="o">=</span> <span class="n">aggregatets</span><span class="p">(</span><span class="n">onexts</span><span class="p">,</span> <span class="no">FUN</span> <span class="o">=</span> <span class="s2">"previoustick"</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="s2">"minutes"</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">15</span><span class="p">)</span> <span class="c1">#15 minute intervals</span>
+
+<span class="n">head</span><span class="p">(</span><span class="n">fivemin</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span></code></pre></figure>
+
+<p>And we create the final raw returns</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">##Create the final raw returns##</span>
+
+<span class="n">fivemin_return</span> <span class="o">=</span> <span class="n">fivemin</span>
+
+<span class="n">fivemin_return</span><span class="vg">$PRICE</span><span class="o">&lt;-</span><span class="p">((</span><span class="n">log</span><span class="p">(</span><span class="n">fivemin_return</span><span class="vg">$BID</span><span class="p">)</span><span class="o">+</span><span class="n">log</span><span class="p">(</span><span class="n">fivemin_return</span><span class="vg">$OFR</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#logarithmic price</span>
+
+<span class="n">fivemin_return</span><span class="vg">$DPRICE</span> <span class="o">=</span> <span class="n">diff</span><span class="p">(</span><span class="n">fivemin_return</span><span class="vg">$PRICE</span><span class="p">,</span> <span class="n">lag</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">#logarithic returns</span></code></pre></figure>
+
+<p>And the final plot</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">##Plot##</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">fivemin_returns</span><span class="p">[,</span><span class="mi">1</span><span class="p">],</span> <span class="n">main</span> <span class="o">=</span> <span class="s2">"EUR/AUD Returns"</span><span class="p">,</span> <span class="n">auto</span><span class="p">.</span><span class="nf">grid</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">,</span> <span class="n">major</span><span class="p">.</span><span class="nf">ticks</span> <span class="o">=</span> <span class="s2">"months"</span><span class="p">,</span> <span class="n">minor</span><span class="p">.</span><span class="nf">ticks</span> <span class="o">=</span> <span class="no">FALSE</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s2">"red"</span><span class="p">)</span></code></pre></figure>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Argyrios Christakopoulos</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Argyrios Christakopoulos
+            
+            </li>
+            
+            <li><a href="mailto:argyrios.christakopoulos@gmail.com">argyrios.christakopoulos@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/christakopoulosa"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">christakopoulosa</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Economic data analysis blog</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
