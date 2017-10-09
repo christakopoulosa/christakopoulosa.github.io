@@ -3,6 +3,7 @@ layout: post
 title:  "High frequency modelling using R part 1"
 date:   2017-10-03
 categories: jekyll update
+comments: True
 ---
 
 In this series I will discuss some issues that I faced during writing my Master thesis on financial risk forecasting using high frequency data.
